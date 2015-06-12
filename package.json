@@ -1,0 +1,33 @@
+{
+  "name": "gh-stats",
+  "version": "0.0.1",
+  "description": "get me some nice github statistics",
+  "main": "main.js",
+  "bin": {
+    "gh-stats": "main.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/hellerve/gh-stats.git"
+  },
+  "keywords": [
+    "git",
+    "github"
+  ],
+  "author": "Veit Heller",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/hellerve/gh-stats/issues"
+  },
+  "homepage": "https://github.com/hellerve/gh-stats",
+  "dependencies": {
+    "control.monads": "^0.6.0",
+    "data.maybe": "^1.2.0",
+    "data.task": "^3.0.0",
+    "github": "^0.2.4",
+    "read": "^1.0.6"
+  }
+}
