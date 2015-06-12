@@ -5,7 +5,7 @@ var
 
 //  die :: String -> IO ()
 var die = function(msg) {
-  console.error(msg);
+  console.error("Error in request to Github: " + JSON.parse(msg.message).message);
   process.exit(1);
 }
 
@@ -46,14 +46,23 @@ read({ prompt: 'Username: ' }, function(err, usr) {
           repo: repo.name
         }, function(err, res) {
           worker -= 1;
-          if(err) { console.error(err, repo.name); return; }
 
-          commitSum += res.length;
+          if(err) console.error("[Fetching commits] Repo does not exist anymore: " + repo.name);
+          else commitSum += res.length;
+
+          if(worker == 0) console.log("Number of Commits in own repos: " + commitSum);
         });
       });
         
-      setTimeout(function() { console.log("Number of Commits: " + commitSum); }, 10000);
-      
+    });
+
+    github.user.getOrgs({
+      user: 'hellerve'
+    }, function(err, res) {
+      if(err) die(err);
+
+      console.log("Number of Organizations: " + res.length);
+      console.log("Organization name(s):" + res.reduce(function(acc, el) { return acc += "\n\t" + el.login; }, ""));
     });
 
   });
