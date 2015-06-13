@@ -22,8 +22,8 @@ var die = function(msg) {
   process.exit(1);
 }
 
-//  authenticate -> IO State
-var authenticate = function() {
+//  authenticate -> String -> String -> IO State
+var authenticate = function(usr, pass) {
   github.authenticate({
     type: 'basic',
     username: usr,
@@ -37,7 +37,7 @@ function main() {
     read({ prompt: 'Password:', silent: true }, function(err, pass) {
       if (err) die(err);
 
-      authenticate();
+      authenticate(usr, pass);
 
       github.repos.getAll({
         user: usr
@@ -71,7 +71,7 @@ function main() {
       }, function(err, res) {
         if (err) die(err);
 
-        if (verbose) {
+        if (VERBOSE) {
           console.log('Number of Organizations: ' + res.length);
           console.log('Organization name(s):' + res.reduce(function(acc, el) { return acc += '\n\t' + el.login; }, ''));
         }
@@ -82,7 +82,7 @@ function main() {
           }, function(err, res) {
             if (err) die(err);
 
-            if (verbose) {
+            if (VERBOSE) {
               console.log('Organization ' 
                          + org.login 
                          + ' has the following repos: ' 
