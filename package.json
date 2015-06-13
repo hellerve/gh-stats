@@ -29,5 +29,6 @@
     "data.task": "^3.0.0",
     "github": "^0.2.4",
     "read": "^1.0.6"
-  }
+  },
+  "devDependencies": {}
 }

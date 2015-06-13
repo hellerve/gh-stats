@@ -1,10 +1,13 @@
+#!/usr/bin/env node
+
 var 
     GitHubApi = require('github')
   , read      = require('read')
+  , config    = require('./package.json')
 
-  , VERBOSE = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('--verbose') == -1)
-  , HELP = !(process.argv.indexOf('-h') == -1 && process.argv.indexOf('--help') == -1)
-  , ERROR = (!(VERBOSE || HELP) && process.argv.length > 2) || process.argv.length > 3
+  , VERBOSE   = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('--verbose') == -1)
+  , HELP      = !(process.argv.indexOf('-h') == -1 && process.argv.indexOf('--help') == -1)
+  , ERROR     = (!(VERBOSE || HELP) && process.argv.length > 2) || process.argv.length > 3
   ;
 
 //  instance State github
@@ -20,7 +23,10 @@ var github = new GitHubApi({
 
 //  printUsage :: Number -> IO ()
 var printUsage = function(ex) {
-  console.log("Usage: gh-stats [(-v/--verbose)|(-h/--help)]\n\t"
+  console.log("gh-stats version " 
+            + config.version
+            + "\n"
+            + "usage: gh-stats [(-v/--verbose)|(-h/--help)]\n\t"
             + "where -v/--verbose = print more info\n\t"
             + "      -h/--help = print help and exit"
             )
