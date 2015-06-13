@@ -2,7 +2,9 @@ var
     GitHubApi = require('github')
   , read      = require('read')
 
-  , VERBOSE = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('-v') == -1);
+  , VERBOSE = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('--verbose') == -1)
+  , HELP = !(process.argv.indexOf('-h') == -1 && process.argv.indexOf('--help') == -1)
+  , ERROR = (!(VERBOSE || HELP) && process.argv.length > 2) || process.argv.length > 3
   ;
 
 //  instance State github
@@ -15,6 +17,15 @@ var github = new GitHubApi({
         'user-agent': 'gh-stats'
     }
 });
+
+//  printUsage :: Number -> IO ()
+var printUsage = function(ex) {
+  console.log("Usage: gh-stats [(-v/--verbose)|(-h/--help)]\n\t"
+            + "where -v/--verbose = print more info\n\t"
+            + "      -h/--help = print help and exit"
+            )
+  process.exit(ex);
+}
 
 //  die :: String -> IO ()
 var die = function(msg) {
@@ -32,6 +43,9 @@ var authenticate = function(usr, pass) {
 }
 
 function main() {
+  if (HELP) printUsage(0);
+  if (ERROR) printUsage(1);
+
   read({ prompt: 'Username: ' }, function(err, usr) {
     if (err) die(err);
     read({ prompt: 'Password:', silent: true }, function(err, pass) {
