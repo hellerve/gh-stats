@@ -9,6 +9,8 @@ var die = function(msg) {
   process.exit(1);
 }
 
+var verbose = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('-v') == -1);
+
 var github = new GitHubApi({
     version: "3.0.0",
     protocol: "https",
@@ -31,7 +33,7 @@ read({ prompt: 'Username: ' }, function(err, usr) {
     });
 
     github.repos.getAll({
-      user: "hellerve"
+      user: usr
     }, function(err, res) {
       if(err) die(err);
 
@@ -42,7 +44,8 @@ read({ prompt: 'Username: ' }, function(err, usr) {
       res.forEach(function(repo) {
         worker += 1;
         github.repos.getCommits({
-          user: "hellerve",
+          author: usr,
+          user: usr,
           repo: repo.name
         }, function(err, res) {
           worker -= 1;
@@ -57,12 +60,47 @@ read({ prompt: 'Username: ' }, function(err, usr) {
     });
 
     github.user.getOrgs({
-      user: 'hellerve'
+      user: usr
     }, function(err, res) {
-      if(err) die(err);
+      if (err) die(err);
 
-      console.log("Number of Organizations: " + res.length);
-      console.log("Organization name(s):" + res.reduce(function(acc, el) { return acc += "\n\t" + el.login; }, ""));
+      if (verbose) {
+        console.log("Number of Organizations: " + res.length);
+        console.log("Organization name(s):" + res.reduce(function(acc, el) { return acc += "\n\t" + el.login; }, ""));
+      }
+
+      res.forEach(function(org) {
+        github.repos.getFromOrg({
+          org: org.login
+        }, function(err, res) {
+          if(err) die(err);
+
+          if (verbose) {
+            console.log('Organization ' 
+                       + org.login 
+                       + ' has the following repos: ' 
+                       + res.reduce(function(acc, el) { return acc += "\n\t" + el.name; }, "")
+                       );
+          }
+
+          var commitSum = 0;
+          var worker = 0;
+          res.forEach(function(repo) {
+            worker += 1;
+            github.repos.getCommits({
+              author: usr,
+              user: org.login,
+              repo: repo.name
+            }, function(err, res) {
+              worker -= 1;
+
+              if(err) console.log("[Fetching commits] Repos does not exist any more: " + repo.name);
+              else commitSum += res.length;
+
+              if(worker == 0) console.log("Number of Commits in " + org.login + "s repos: " + commitSum);
+            });
+          });
+       })});
     });
 
   });
