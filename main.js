@@ -27,15 +27,22 @@ var printUsage = function(ex) {
             + config.version
             + "\n"
             + "usage: gh-stats [(-v/--verbose)|(-h/--help)]\n\t"
-            + "where -v/--verbose = print more info\n\t"
-            + "      -h/--help = print help and exit"
+            + "where: -v/--verbose = print more info\n\t"
+            + "       -h/--help    = print help and exit"
             )
   process.exit(ex);
 }
 
 //  die :: String -> IO ()
 var die = function(msg) {
-  console.error('Error in request to Github: ' + JSON.parse(msg.message).message);
+  if (msg.message) {
+    console.error(msg.code 
+                + ' Error in request to Github: ' 
+                + JSON.parse(msg.message).message
+                );
+  } else {
+    console.error('Undefined error in request to Github:', msg);
+  }
   process.exit(1);
 }
 
@@ -48,9 +55,98 @@ var authenticate = function(usr, pass) {
   });
 }
 
-function main() {
+//  inb4 :: IO ()
+var inb4 = function() {
   if (HELP) printUsage(0);
   if (ERROR) printUsage(1);
+}
+
+//  catchErr :: (a -> b) -> String -> (c -> a -> IO a)
+var catchErr = function(fun, usr) {
+  return function(err, x) {
+    if (err) die(err);
+    return fun(x, usr);
+  }
+}
+
+//  getRepos -> Object -> String -> IO ()
+var getRepos = function(res, usr) {
+  console.log('Number of Repos: ' + res.length);
+
+  var commitSum = 0;
+  var worker = 0;
+  
+  res.forEach(function(repo) {
+    worker += 1;
+    github.repos.getCommits({
+      author: usr,
+      user: usr,
+      repo: repo.name
+    }, function(err, res) {
+      worker -= 1;
+
+      if (err) console.error('[Fetching commits] Repo does not exist anymore: ' + repo.name);
+      else commitSum += res.length;
+
+      if (worker == 0) console.log('Number of Commits in own repos: ' + commitSum);
+    });
+  });
+}
+
+//  getOrgs -> Object -> String -> IO ()
+var getOrgs = function(res, usr) {
+  var _concat = function(prop, acc, el) { return acc += '\n\t' + el[prop]; };
+
+  if (VERBOSE) {
+    console.log('Number of Organizations: ' + res.length);
+    console.log('Organization name(s):' 
+              + res.reduce(_concat.bind(undefined, 'login'), '')
+              );
+  }
+
+  res.forEach(function(org) {
+    github.repos.getFromOrg({
+      org: org.login
+    }, catchErr(function(res) {
+      if (VERBOSE) {
+        console.log('Organization ' 
+                   + org.login 
+                   + ' has the following repos: ' 
+                   + res.reduce(_concat.bind(undefined, 'name'), '')
+                   );
+      }
+
+      var commitSum = 0;
+      var worker = 0;
+      res.forEach(function(repo) {
+        worker += 1;
+        
+        github.repos.getCommits({
+          author: usr,
+          user: org.login,
+          repo: repo.name
+        }, function(err, res) {
+          worker -= 1;
+
+          if (err) console.log('[Fetching commits] Repos does not exist any more: ' + repo.name);
+          else commitSum += res.length;
+
+          if (worker == 0) {
+            console.log('Number of Commits in ' 
+                      + org.login 
+                      + 's repos: ' 
+                      + commitSum
+                      );
+          }
+        });
+      });
+    }));
+  });
+}
+
+//  main -> IO ()
+var main = function() {
+  inb4();
 
   read({ prompt: 'Username: ' }, function(err, usr) {
     if (err) die(err);
@@ -59,77 +155,9 @@ function main() {
 
       authenticate(usr, pass);
 
-      github.repos.getAll({
-        user: usr
-      }, function(err, res) {
-        if (err) die(err);
+      github.repos.getAll({ user: usr }, catchErr(getRepos, usr));
 
-        console.log('Number of Repos: ' + res.length);
-
-        var commitSum = 0;
-        var worker = 0;
-        res.forEach(function(repo) {
-          worker += 1;
-          github.repos.getCommits({
-            author: usr,
-            user: usr,
-            repo: repo.name
-          }, function(err, res) {
-            worker -= 1;
-
-            if (err) console.error('[Fetching commits] Repo does not exist anymore: ' + repo.name);
-            else commitSum += res.length;
-
-            if (worker == 0) console.log('Number of Commits in own repos: ' + commitSum);
-          });
-        });
-          
-      });
-
-      github.user.getOrgs({
-        user: usr
-      }, function(err, res) {
-        if (err) die(err);
-
-        if (VERBOSE) {
-          console.log('Number of Organizations: ' + res.length);
-          console.log('Organization name(s):' + res.reduce(function(acc, el) { return acc += '\n\t' + el.login; }, ''));
-        }
-
-        res.forEach(function(org) {
-          github.repos.getFromOrg({
-            org: org.login
-          }, function(err, res) {
-            if (err) die(err);
-
-            if (VERBOSE) {
-              console.log('Organization ' 
-                         + org.login 
-                         + ' has the following repos: ' 
-                         + res.reduce(function(acc, el) { return acc += '\n\t' + el.name; }, '')
-                         );
-            }
-
-            var commitSum = 0;
-            var worker = 0;
-            res.forEach(function(repo) {
-              worker += 1;
-              github.repos.getCommits({
-                author: usr,
-                user: org.login,
-                repo: repo.name
-              }, function(err, res) {
-                worker -= 1;
-
-                if (err) console.log('[Fetching commits] Repos does not exist any more: ' + repo.name);
-                else commitSum += res.length;
-
-                if (worker == 0) console.log('Number of Commits in ' + org.login + 's repos: ' + commitSum);
-              });
-            });
-         })});
-      });
-
+      github.user.getOrgs({ user: usr }, catchErr(getOrgs, usr));
     });
   });
 }
