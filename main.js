@@ -75,7 +75,13 @@ var getRepos = function(res, usr) {
 
   var commitSum = 0;
   var worker = 0;
-  
+
+  if (VERBOSE) {
+    console.log('You are owner of the following repos: ' 
+               + res.reduce(_concat.bind(undefined, 'name'), '')
+               );
+  }
+
   res.forEach(function(repo) {
     worker += 1;
     github.repos.getCommits({
@@ -111,7 +117,7 @@ var getOrgs = function(res, usr) {
       if (VERBOSE) {
         console.log('Organization ' 
                    + org.login 
-                   + ' has the following repos: ' 
+                   + ' maintains the following repos: ' 
                    + res.reduce(_concat.bind(undefined, 'name'), '')
                    );
       }
