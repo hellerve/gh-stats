@@ -74,6 +74,7 @@ var getRepos = function(res, usr) {
   console.log('Number of Repos: ' + res.length);
 
   var commitSum = 0;
+  var starSum = 0;
   var worker = 0;
 
   if (VERBOSE) {
@@ -84,6 +85,7 @@ var getRepos = function(res, usr) {
 
   res.forEach(function(repo) {
     worker += 1;
+    starSum += repo.stargazers_count;
     github.repos.getCommits({
       author: usr,
       user: usr,
@@ -94,7 +96,10 @@ var getRepos = function(res, usr) {
       if (err) console.error('[Fetching commits] Repo does not exist anymore: ' + repo.name);
       else commitSum += res.length;
 
-      if (worker == 0) console.log('Number of Commits in own repos: ' + commitSum);
+      if (worker == 0) {
+        console.log('Number of Commits in own repos: ' + commitSum);
+        console.log('Number of Stargazers for all repos: ' + starSum);
+      }
     });
   });
 }
