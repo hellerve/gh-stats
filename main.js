@@ -3,6 +3,7 @@
 var 
     GitHubApi = require('github')
   , read      = require('read')
+  , Maybe     = require('Data.Maybe')
   , config    = require('./package.json')
 
   , VERBOSE   = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('--verbose') == -1)
@@ -20,6 +21,18 @@ var github = new GitHubApi({
         'user-agent': 'gh-stats'
     }
 });
+
+//  allButOne :: {a} -> a -> {a}
+var allButOne = function(d, a) {
+    var res = {};
+    for (var i = 0, len = d.length; i < len; ++i) {
+        var k = d[i];
+        if (!(a === k)) {
+            res[k] = d[k];
+        }
+    }
+    return res;
+};
 
 //  printUsage :: Number -> IO ()
 var printUsage = function(ex) {
@@ -61,11 +74,14 @@ var inb4 = function() {
   if (ERROR) printUsage(1);
 }
 
-//  catchErr :: (a -> b) -> String -> (c -> a -> IO a)
-var catchErr = function(fun, usr) {
+//  catchErr :: (a -> b) -> Variable Var -> (c -> a -> IO a)
+var catchErr = function(fun) {
+  var args = arguments;
   return function(err, x) {
     if (err) die(err);
-    return fun(x, usr);
+    f = fun;
+    args[0] = x;
+    return f.apply(null, args);
   }
 }
 

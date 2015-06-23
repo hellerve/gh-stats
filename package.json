@@ -24,9 +24,7 @@
   },
   "homepage": "https://github.com/hellerve/gh-stats",
   "dependencies": {
-    "control.monads": "^0.6.0",
     "data.maybe": "^1.2.0",
-    "data.task": "^3.0.0",
     "github": "^0.2.4",
     "read": "^1.0.6"
   },
