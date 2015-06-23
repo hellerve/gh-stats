@@ -3,7 +3,6 @@
 var 
     GitHubApi = require('github')
   , read      = require('read')
-  , Maybe     = require('Data.Maybe')
   , config    = require('./package.json')
 
   , VERBOSE   = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('--verbose') == -1)
