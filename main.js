@@ -1,11 +1,13 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --harmony
 
 var 
     GitHubApi = require('github')
   , read      = require('read')
   , config    = require('./package.json')
+  ;
 
-  , VERBOSE   = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('--verbose') == -1)
+const
+    VERBOSE   = !(process.argv.indexOf('-v') == -1 && process.argv.indexOf('--verbose') == -1)
   , HELP      = !(process.argv.indexOf('-h') == -1 && process.argv.indexOf('--help') == -1)
   , ERROR     = (!(VERBOSE || HELP) && process.argv.length > 2) || process.argv.length > 3
   ;
@@ -20,18 +22,6 @@ var github = new GitHubApi({
         'user-agent': 'gh-stats'
     }
 });
-
-//  allButOne :: {a} -> a -> {a}
-var allButOne = function(d, a) {
-    var res = {};
-    for (var i = 0, len = d.length; i < len; ++i) {
-        var k = d[i];
-        if (!(a === k)) {
-            res[k] = d[k];
-        }
-    }
-    return res;
-};
 
 //  printUsage :: Number -> IO ()
 var printUsage = function(ex) {
