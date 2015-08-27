@@ -48,6 +48,15 @@ var die = function(msg) {
   process.exit(1);
 }
 
+//  errored_commits -> String -> Error -> IO
+var errored_commits = function(repo, err) {
+  console.error("Fetching commits for "
+                + repo
+                + " failed due to: "
+                + JSON.parse(err.message).message
+               );
+}
+
 //  authenticate -> String -> String -> IO State
 var authenticate = function(usr, pass) {
   github.authenticate({
@@ -76,6 +85,7 @@ var catchErr = function(fun) {
 
 //  getRepos -> Object -> String -> IO ()
 var getRepos = function(res, usr) {
+  var _concat = function(prop, acc, el) { return acc += '\n\t' + el[prop]; };
   console.log('Number of Repos: ' + res.length);
 
   var commitSum = 0;
@@ -88,17 +98,20 @@ var getRepos = function(res, usr) {
                );
   }
 
+  res = res.filter(function(el) { return el['owner']['login'] == usr; });
+
   res.forEach(function(repo) {
     worker += 1;
     starSum += repo.stargazers_count;
     github.repos.getCommits({
       author: usr,
       user: usr,
-      repo: repo.name
+      repo: repo.name,
+      per_page: 100,
     }, function(err, res) {
       worker -= 1;
 
-      if (err) console.error('[Fetching commits] Repo does not exist anymore: ' + repo.name);
+      if (err) errored_commits(repo.name, err);
       else commitSum += res.length;
 
       if (worker == 0) {
@@ -134,17 +147,19 @@ var getOrgs = function(res, usr) {
 
       var commitSum = 0;
       var worker = 0;
+
       res.forEach(function(repo) {
         worker += 1;
         
         github.repos.getCommits({
           author: usr,
           user: org.login,
-          repo: repo.name
+          repo: repo.name,
+          per_page: 100,
         }, function(err, res) {
           worker -= 1;
 
-          if (err) console.log('[Fetching commits] Repos does not exist any more: ' + repo.name);
+          if (err) errored_commits(repo.name, err);
           else commitSum += res.length;
 
           if (worker == 0) {
