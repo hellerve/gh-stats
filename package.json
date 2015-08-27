@@ -1,6 +1,6 @@
 {
   "name": "gh-stats",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "get me some nice github statistics",
   "main": "main.js",
   "bin": {

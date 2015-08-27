@@ -100,7 +100,6 @@ var getRepos = function(res, usr) {
   }
 
   res.forEach(function(repo) {
-    console.log(repo.name, repo.stargazers_count);
     worker += 1;
     starSum += repo.stargazers_count;
     github.repos.getCommits({
