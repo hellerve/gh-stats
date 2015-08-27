@@ -86,6 +86,7 @@ var catchErr = function(fun) {
 //  getRepos -> Object -> String -> IO ()
 var getRepos = function(res, usr) {
   var _concat = function(prop, acc, el) { return acc += '\n\t' + el[prop]; };
+  res = res.filter(function(el) { return el['owner']['login'] == usr; });
   console.log('Number of Repos: ' + res.length);
 
   var commitSum = 0;
@@ -98,9 +99,8 @@ var getRepos = function(res, usr) {
                );
   }
 
-  res = res.filter(function(el) { return el['owner']['login'] == usr; });
-
   res.forEach(function(repo) {
+    console.log(repo.name, repo.stargazers_count);
     worker += 1;
     starSum += repo.stargazers_count;
     github.repos.getCommits({
@@ -186,9 +186,9 @@ var main = function() {
 
       authenticate(usr, pass);
 
-      github.repos.getAll({ user: usr }, catchErr(getRepos, usr));
+      github.repos.getAll({ user: usr, per_page: 100, }, catchErr(getRepos, usr));
 
-      github.user.getOrgs({ user: usr }, catchErr(getOrgs, usr));
+      github.user.getOrgs({ user: usr, per_page: 100, }, catchErr(getOrgs, usr));
     });
   });
 }

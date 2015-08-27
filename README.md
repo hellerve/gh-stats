@@ -6,7 +6,8 @@ proof of concept of sorts.**
 Fetch your personal Github statistics.
 
 It asks you for your credentials and then fetches all information
-about your repositories, commits and organizations.
+about your repositories, commits and organizations. Mostly just
+the number of commits, really.
 
 ## usage
 ```
