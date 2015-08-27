@@ -1,6 +1,6 @@
 # gh-stats
 
-**This is messy code and not very informative yet. See it as a
+**This is not very informative yet. See it as a
 proof of concept of sorts.**
 
 Fetch your personal Github statistics.
@@ -10,5 +10,8 @@ about your repositories, commits and organizations.
 
 ## usage
 ```
-gh-stats [-h/--help|-v/--verbose]
+gh-stats version 0.1.2
+usage: gh-stats [(-v/--verbose)|(-h/--help)]
+	where: -v/--verbose = print more info
+	       -h/--help    = print help and exit
 ```
